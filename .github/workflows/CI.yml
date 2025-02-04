@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     services:
@@ -21,21 +21,24 @@ jobs:
           POSTGRES_DB: mydatabase
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd pg_isready 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Use Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
 
-      - name: ESLint check
+      - name: Run ESLint checks
         run: npm run lint
 
       - name: Set up environment variables
@@ -58,8 +61,20 @@ jobs:
           echo "LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret" >> .env
           echo "LINKEDIN_REDIRECT_URL=http://localhost:${SERVER_PORT}/api/auth/linkedin/callback" >> .env
 
+      - name: Run database sync and seed
+        run: |
+          npm run sync:db
+          npm run seed
+
       - name: Run tests
         run: npm run test
 
-      - name: Build
+      - name: Run database migrations
+        run: npm run migrations
+
+      - name: Build project
         run: npm run build
+
+      - name: Deploy and restart with PM2
+        run: |
+          pm2 restart --all
