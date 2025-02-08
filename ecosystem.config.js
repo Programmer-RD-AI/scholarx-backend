@@ -34,11 +34,11 @@ module.exports = {
   ],
   deploy: {
     production: {
-      user: 'SSH_USERNAME',
-      host: 'SSH_HOSTMACHINE',
+      user: 'SSH_USERNAME', // TODO
+      host: 'SSH_HOSTMACHINE', // TODO
       ref: 'origin/main',
-      repo: 'GIT_REPOSITORY',
-      path: 'DESTINATION_PATH',
+      repo: 'GIT_REPOSITORY', // TODO
+      path: 'DESTINATION_PATH', // TODO
       'pre-deploy-local': '',
       'post-deploy':
         'npm install && npm run build && npm run sync:db && pm2 reload ecosystem.config.js --env production',
